@@ -122,3 +122,6 @@ class Accessor(str):
 
 
 A = Accessor  # alias
+
+def access(obj, path, quiet=True):
+    return Accessor(path).resolve(obj, quiet=quiet)
