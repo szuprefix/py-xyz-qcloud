@@ -9,9 +9,10 @@ A = lambda c: get_setting('VOD', c)
 SECRET_ID = A('SECRET_ID')
 SECRET_KEY = A('SECRET_KEY')
 AP = A('AP') or "ap-guangzhou"
+SUB_APP_ID = A('SUB_APP_ID')
 
 
-def gen_signature(SecretId=SECRET_ID, SecretKey=SECRET_KEY, expire=3600, extra_params=None):
+def gen_signature(SecretId=SECRET_ID, SecretKey=SECRET_KEY, expire=3600, sub_app_id=SUB_APP_ID, extra_params=None):
     TimeStamp = int(time.time())
     # TimeStamp = 1571215095
     ExpireTime = TimeStamp + expire
@@ -22,6 +23,9 @@ def gen_signature(SecretId=SECRET_ID, SecretKey=SECRET_KEY, expire=3600, extra_p
                + "&currentTimeStamp=" + str(TimeStamp) \
                + "&expireTime=" + str(ExpireTime) \
                + "&random=" + str(Random)
+    if sub_app_id:
+        Original += "&vodSubAppId=" + str(sub_app_id)
+        print sub_app_id
     if extra_params:
         Original += "&" + extra_params
     Hmac = hmac.new(bytes(SecretKey), bytes(Original), hashlib.sha1)
