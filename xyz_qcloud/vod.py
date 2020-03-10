@@ -3,13 +3,12 @@
 from __future__ import unicode_literals
 
 import json, time, random, hmac, hashlib, base64
-from .utils import access
-from django.conf import settings
+from .utils import get_setting
 
-C = lambda n: access(settings, 'QCLOUD.VOD.%s' % n)
-SECRET_ID = C('SECRET_ID') or 'SECRET_ID'
-SECRET_KEY = C('SECRET_KEY') or 'SECRET_KEY'
-AP = C('AP') or "ap-guangzhou"
+A = lambda c: get_setting('VOD', c)
+SECRET_ID = A('SECRET_ID')
+SECRET_KEY = A('SECRET_KEY')
+AP = A('AP') or "ap-guangzhou"
 
 
 def gen_signature(SecretId=SECRET_ID, SecretKey=SECRET_KEY, expire=3600, extra_params=None):

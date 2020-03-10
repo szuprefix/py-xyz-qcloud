@@ -2,6 +2,7 @@
 # author = 'denishuang'
 from __future__ import unicode_literals
 
+
 class Accessor(str):
     '''
     A string describing a path from one object to another via attribute/index
@@ -59,8 +60,8 @@ class Accessor(str):
                             current = current[int(bit)]
                         except (IndexError,  # list index out of range
                                 ValueError,  # invalid literal for int()
-                                KeyError,    # dict without `int(bit)` key
-                                TypeError,   # unsubscriptable object
+                                KeyError,  # dict without `int(bit)` key
+                                TypeError,  # unsubscriptable object
                                 ):
                             raise ValueError('Failed lookup for key [%s] in %r'
                                              ', when resolving the accessor %s' % (bit, current, self)
@@ -123,5 +124,16 @@ class Accessor(str):
 
 A = Accessor  # alias
 
+
 def access(obj, path, quiet=True):
     return Accessor(path).resolve(obj, quiet=quiet)
+
+
+from django.conf import settings
+
+
+def get_setting(p, c):
+    s = access(settings, 'QCLOUD.%s.%s' % (p, c))
+    if s is not None:
+        return s
+    return access(settings, 'QCLOUD.%s' % (c))
