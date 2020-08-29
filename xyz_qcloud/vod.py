@@ -35,12 +35,14 @@ def gen_signature(SecretId=SECRET_ID, SecretKey=SECRET_KEY, expire=3600, sub_app
     return Signature2
 
 
-def get_media_info(file_ids, ap=AP):
+def get_media_info(file_ids, ap=AP, sub_app_id=SUB_APP_ID):
     from tencentcloud.vod.v20180717 import models, vod_client
     from tencentcloud.common import credential
     cred = credential.Credential(SECRET_ID, SECRET_KEY)
     client = vod_client.VodClient(cred, ap)
     req = models.DescribeMediaInfosRequest()
     req.FileIds = file_ids.split(',') if isinstance(file_ids, (str, unicode)) else file_ids
+    if sub_app_id:
+        req.SubAppId = sub_app_id
     resp = client.DescribeMediaInfos(req)
     return json.loads(resp.to_json_string())
