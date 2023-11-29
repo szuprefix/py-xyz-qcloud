@@ -5,7 +5,7 @@ import sys
 
 setup(
     name="xyz-qcloud",
-    version="0.0.5",
+    version="0.0.6",
     author="XYZSaas",
     author_email="szuprefix@126.com",
     description="qcloud utils",
@@ -17,7 +17,7 @@ setup(
     install_requires=[
         'django>=1.11.2',
         'vod-python-sdk',
-        'tencentcloud-sdk-python'
+        'tencentcloud-sdk-python==3.0.116'
     ],
     classifiers=[
         "Environment :: Web Environment",

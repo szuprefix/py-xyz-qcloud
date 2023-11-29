@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*- 
 # author = 'denishuang'
-from __future__ import unicode_literals
+from __future__ import unicode_literals, print_function
 
 import json, time, random, hmac, hashlib, base64
 from .utils import get_setting
@@ -25,7 +25,7 @@ def gen_signature(SecretId=SECRET_ID, SecretKey=SECRET_KEY, expire=3600, sub_app
                + "&random=" + str(Random)
     if sub_app_id:
         Original += "&vodSubAppId=" + str(sub_app_id)
-        print sub_app_id
+        print(sub_app_id)
     if extra_params:
         Original += "&" + extra_params
     Hmac = hmac.new(bytes(SecretKey), bytes(Original), hashlib.sha1)
