@@ -5,7 +5,7 @@ import sys
 
 setup(
     name="xyz-qcloud",
-    version="0.0.6",
+    version="0.0.7",
     author="XYZSaas",
     author_email="szuprefix@126.com",
     description="qcloud utils",

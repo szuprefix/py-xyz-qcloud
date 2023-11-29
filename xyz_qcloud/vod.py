@@ -3,6 +3,9 @@
 from __future__ import unicode_literals, print_function
 
 import json, time, random, hmac, hashlib, base64
+
+from six import text_type
+
 from .utils import get_setting
 
 A = lambda c: get_setting('VOD', c)
@@ -41,7 +44,7 @@ def get_media_info(file_ids, ap=AP, sub_app_id=SUB_APP_ID):
     cred = credential.Credential(SECRET_ID, SECRET_KEY)
     client = vod_client.VodClient(cred, ap)
     req = models.DescribeMediaInfosRequest()
-    req.FileIds = file_ids.split(',') if isinstance(file_ids, (str, unicode)) else file_ids
+    req.FileIds = file_ids.split(',') if isinstance(file_ids, text_type) else file_ids
     if sub_app_id:
         req.SubAppId = sub_app_id
     resp = client.DescribeMediaInfos(req)
