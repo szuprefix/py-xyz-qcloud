@@ -31,11 +31,11 @@ def gen_signature(SecretId=SECRET_ID, SecretKey=SECRET_KEY, expire=3600, sub_app
         print(sub_app_id)
     if extra_params:
         Original += "&" + extra_params
-    Hmac = hmac.new(bytes(SecretKey), bytes(Original), hashlib.sha1)
+    Hmac = hmac.new(SecretKey.encode(), Original.encode(), hashlib.sha1)
     Sha1 = Hmac.digest()
-    Signature = bytes(Sha1) + bytes(Original)
+    Signature = Sha1 + Original.encode()
     Signature2 = base64.b64encode(Signature)
-    return Signature2
+    return Signature2.decode()
 
 
 def get_media_info(file_ids, ap=AP, sub_app_id=SUB_APP_ID):
