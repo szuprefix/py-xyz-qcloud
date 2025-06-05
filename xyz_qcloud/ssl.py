@@ -3,59 +3,104 @@ from tencentcloud.common.profile.client_profile import ClientProfile
 from tencentcloud.common.profile.http_profile import HttpProfile
 from tencentcloud.common.exception.tencent_cloud_sdk_exception import TencentCloudSDKException
 from tencentcloud.ssl.v20191205 import ssl_client, models
-import os
+import os, json
 
 SECRET_ID = os.getenv('SECRET_ID')
 SECRET_KEY = os.getenv('SECRET_KEY')
 
-def upload_ssl_certificate(cert_name, cert_file, key_file, secret_id=SECRET_ID, secret_key=SECRET_KEY,  cert_type="SVR"):
-    """
-    上传SSL证书到腾讯云
+RES_TYPES = ['clb',
+ 'cdn',
+ 'waf',
+ 'live',
+ 'ddos',
+ 'teo',
+ 'apigateway',
+ 'vod',
+ 'tke',
+ 'tcb',
+ 'tse',
+ 'cos']
 
-    参数:
-        secret_id: 腾讯云API密钥ID
-        secret_key: 腾讯云API密钥Key
-        cert_name: 证书名称
-        cert_file: 证书文件路径(PEM格式)
-        key_file: 私钥文件路径(PEM格式)
-        cert_type: 证书类型，默认为"SVR"(服务器证书)
-    """
+def get_client(secret_id=SECRET_ID, secret_key=SECRET_KEY):
+    cred = credential.Credential(secret_id, secret_key)
+
+    http_profile = HttpProfile()
+    http_profile.endpoint = "ssl.tencentcloudapi.com"
+
+    client_profile = ClientProfile()
+    client_profile.httpProfile = http_profile
+
+    # 创建SSL客户端
+    client = ssl_client.SslClient(cred, "", client_profile)
+
+    return client
+
+def get_cert(id):
+    describe_req = models.DescribeCertificateDetailRequest()
+    describe_req.CertificateId = id
+    client = get_client()
+    return client.DescribeCertificateDetail(describe_req)
+
+
+def query_certs(keyword='', client=None, **kwargs):
     try:
-        # 初始化认证对象
-        cred = credential.Credential(secret_id, secret_key)
+        if not client:
+            client = get_client()
 
-        # 配置HTTP和客户端
-        http_profile = HttpProfile()
-        http_profile.endpoint = "ssl.tencentcloudapi.com"
+        req = models.DescribeCertificatesRequest()
 
-        client_profile = ClientProfile()
-        client_profile.httpProfile = http_profile
+        params = {
+            "SearchKey": keyword
+        }
+        req.from_json_string(json.dumps(params))
 
-        # 创建SSL客户端
-        client = ssl_client.SslClient(cred, "", client_profile)
+        resp = client.DescribeCertificates(req)
 
-        # 读取证书和私钥文件内容
-        if '-----' in cert_file:
-            certificate_content = cert_file
+        certificates = []
+        for cert in resp.Certificates:
+            d = json.loads(cert.to_json_string())
+            if kwargs.items()<= d.items():
+                certificates.append(d)
+
+        return certificates
+
+    except Exception as err:
+        print(f"查询SSL证书时出错: {err}")
+        return []
+
+def read_key_file(fn):
+    if '-----' in fn:
+        return fn
+    else:
+        with open(fn, 'r') as f:
+            return f.read()
+
+def upload_cert(cert_name, cert_file, key_file,  cert_type="SVR", resource_types=RES_TYPES, **kwargs):
+    try:
+        client = get_client(**kwargs)
+
+        certificate_content = read_key_file(cert_file)
+
+        private_key_content = read_key_file(key_file)
+        certs = query_certs(cert_name, Alias=cert_name)
+        if certs:
+            cert = certs[0]
+            id = cert['CertificateId']
+            print(f'update cert: {id}')
+            req = models.UpdateCertificateInstanceRequest()
+            req.OldCertificateId = id
+            req.ResourceTypes = resource_types
+            req.CertificatePublicKey = certificate_content
+            req.CertificatePrivateKey = private_key_content
+            resp = client.UpdateCertificateInstance(req)
+            return json.loads(resp.to_json_string())
         else:
-            with open(cert_file, 'r') as f:
-                certificate_content = f.read()
-
-        if '-----' in key_file:
-            private_key_content = key_file
-        else:
-            with open(key_file, 'r') as f:
-                private_key_content = f.read()
-
-        # 构造请求参数
-        req = models.UploadCertificateRequest()
-        req.CertificatePublicKey = certificate_content
-        req.CertificatePrivateKey = private_key_content
-        req.Alias = cert_name
-        req.CertificateType = cert_type
-
-        # 发起请求
-        resp = client.UploadCertificate(req)
+            req = models.UploadCertificateRequest()
+            req.CertificatePublicKey = certificate_content
+            req.CertificatePrivateKey = private_key_content
+            req.Alias = cert_name
+            req.CertificateType = cert_type
+            resp = client.UploadCertificate(req)
 
         # 返回响应
         return {
@@ -66,3 +111,4 @@ def upload_ssl_certificate(cert_name, cert_file, key_file, secret_id=SECRET_ID, 
     except TencentCloudSDKException as err:
         print(f"上传SSL证书失败: {err}")
         return None
+
