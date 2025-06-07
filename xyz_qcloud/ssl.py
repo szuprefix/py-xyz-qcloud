@@ -89,6 +89,7 @@ def upload_cert(cert_name, cert_file, key_file,  cert_type="SVR", resource_types
             print(f'update cert: {id}')
             req = models.UpdateCertificateInstanceRequest()
             req.OldCertificateId = id
+            req.Alias = cert_name
             req.ResourceTypes = resource_types
             req.CertificatePublicKey = certificate_content
             req.CertificatePrivateKey = private_key_content
